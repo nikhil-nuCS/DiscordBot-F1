@@ -2,70 +2,15 @@ import ergast_py
 import pprint
 import discord
 from discord.ext import commands
-import random
-import asyncio
 from discord import Colour
 from tabulate import tabulate
 
 readymade_api = ergast_py.Ergast()
-# try:
-#     seasons = readymade_api.limit(100).get_seasons()
-#     print(seasons)
-#     # for driver in drivers:
-#     #     print(driver)
-# except Exception as e:
-#     print(e)
-# print("LOSA")
-
-# Change the token before doing any changes
 TOKEN = "MTA0NTEyNTQ4NTIwNzc2MTAyNw.G7wap7.8tzyD8EdPE2Eqjfhcj8ZUXGIA8X4DoOpBJ5Ws0"
 intent = discord.Intents.default()
 intent.message_content = True
 
 bot = commands.Bot(command_prefix="!fb ", intents=intent)
-
-
-def too_long(message):
-    """Returns True if the message exceeds discord's 2000 character limit."""
-    return len(message) >= 2000
-
-
-def make_table(data, headers='keys', fmt='fancy_grid'):
-    """Tabulate data into an ASCII table. Return value is a str.
-    The `fmt` param defaults to 'fancy_grid' which includes borders for cells. If the table exceeds
-    Discord message limit the table is rebuilt with borders removed.
-    If still too large raise `MessageTooLongError`.
-    """
-    table = tabulate(data, headers=headers, tablefmt=fmt)
-    # remove cell borders if too long
-    if too_long(table):
-        table = tabulate(data, headers=headers, tablefmt='simple')
-        # cannot send table if too large even without borders
-        if too_long(table):
-            print('Table too large to send.')
-    return table
-
-
-DISABLE_DM = False
-
-
-async def get_target(ctx, msg_type):
-    """Check if the target of a command response should be direct message or channel.
-    Returns an object of `ctx.author` or the original `ctx`.
-    Parameters
-    ----------
-    `ctx` : Context
-        The invocation context of the command.
-    `msg_type`: str
-        Type of message response: 'table', 'file', 'image', 'error' or 'embed'. Regular text will
-        be sent to the channel unless part of the command response of the previous types.
-    """
-    if DISABLE_DM:
-        DM = False
-    if DM:
-        return ctx.author
-    else:
-        return ctx
 
 
 @bot.event
