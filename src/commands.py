@@ -1,5 +1,9 @@
+import asyncio
+
+import plot as plot
 from tabulate import tabulate
-from utils import is_future, get_driver_full_name
+from utils import is_future, get_driver_full_name, get_formatted_date, get_formatted_pit_stop_time
+from fetch import fetch
 import discord
 from discord.ext import commands
 import ergast_py
@@ -29,10 +33,11 @@ async def purpose(ctx):
 
 @bot.command()
 async def career(ctx, driver_id):
-    embed = discord.Embed(title="Driver Career Stats Request Response", description="Sample description")
     await ctx.send("*Gathering driver data, this may take a few moments...*")
     driver_info = ergast_api.driver(driver_id).get_driver()
-
+    embed = discord.Embed(title=f"{driver_info.driver_id} Information:",
+                          description="Information about the requested driver can be seen here",
+                          url=driver_info.url)
     embed.add_field(name="Driver Name", value=driver_info.given_name + " " + driver_info.family_name)
     embed.add_field(name="Code", value=driver_info.code)
     embed.add_field(name="Driver Number", value=driver_info.permanent_number)
@@ -52,24 +57,23 @@ async def circuits(ctx, season="current"):
         return
     ans = []
     for circuit in circuit_list:
-        ans.append([circuit.race_name, circuit.circuit.location.country])
-    table_format = tabulate(ans, headers=["Name", "Location"], tablefmt="simple")
+        ans.append([circuit.race_name, circuit.circuit.location.country, get_formatted_date(circuit.date)])
+    table_format = tabulate(ans, headers=["Name", "Location", "Date"], tablefmt="simple")
     await ctx.send(f"```\n{table_format}\n```")
     return
 
 
 @bot.command()
 async def circuit(ctx, circuit_name):
-    # if not circuit_name:
-    #     return
-    circuit_info = ergast_api.circuit("silverstone").get_circuit()
+    circuit_info = ergast_api.circuit(circuit_name).get_circuit()
     print(circuit_info)
     return
 
 
 @bot.command()
 async def nextrace(ctx):
-    # next_race = readymade_api.
+    next_race = ergast_api.season().status()
+    print(next_race)
     return
 
 
@@ -101,3 +105,45 @@ async def results(ctx, season="current", round="last"):
     print(result)
     await ctx.send("*Gathering driver data, this may take a few moments...*")
     return
+
+
+@bot.command()
+async def predict(ctx, event="race"):
+    url = "https://www.f1-predictor.com/api-next-race-prediction/"
+    res = await fetch(url)
+    print(res)
+    ans = []
+    ind = 1
+    if event == "race" or event == "qualifying":
+        for driver, driver_num in res[event]["ranking"].items():
+            ans.append([ind, driver])
+            ind += 1
+        table = tabulate(ans, headers=["Position", "Name"])
+        await ctx.send(f"```\n{table}\n```")
+        return
+    else:
+        ctx.send("Can only predict 'race' and 'qualifying'")
+        return
+
+
+@bot.command()
+async def pitstops(ctx, season="current", round_no="last"):
+    if not season == "current" and int(season) < 2012:
+        await ctx.send("Pit stop data available only after 2012 season")
+        return
+
+    stops = ergast_api.season(season).round(round_no).get_pit_stops()[0]
+    ans = []
+    for pit_stop in stops.pit_stops:
+        ans.append([pit_stop.lap, pit_stop.driver_id, pit_stop.stop, get_formatted_pit_stop_time(pit_stop.duration)])
+    table = tabulate(ans, headers=["Lap Number", "Driver ID", "Stop number", "Pit time (sec)"])
+    await ctx.send(f"```\n{table}\n```")
+    return
+
+# @plot.command(aliases=['laps'])
+# async def timings(ctx, season: int = 'current', rnd: int = 'last', *drivers):
+#     if not (len(drivers) == 0 or drivers[0] == 'all'):
+#         driver_list = [ergast_api.driver(d).get_driver().driver_id for d in drivers]
+#     else:
+#         driver_list = []
+#     laps_task = asyncio.create_task(ergast_api.season(season).round(rnd).get_all_laps())
