@@ -28,7 +28,7 @@ async def on_ready():
 
 @bot.command()
 async def purpose(ctx):
-    await ctx.send("F1 Bot for CS 397 - STL Final Project")
+    await ctx.send("Discord F1 Bot for CS 397 - STL Final Project")
 
 
 @bot.command()
@@ -52,14 +52,16 @@ async def career(ctx, driver_inp):
 
 @bot.command(aliases=['races'])
 async def circuits(ctx, season="current"):
+    await ctx.send("*Gathering circuit data, this may take a few seconds...*")
     circuit_list = ergast_api.season(season).get_races()
     if not circuit_list:
-        await ctx.send("Could not find information")
+        await ctx.send("This information is currently not available.")
         return
     ans = []
     for circuit in circuit_list:
         ans.append([circuit.race_name, circuit.circuit.location.country, get_formatted_date(circuit.date)])
     table_format = tabulate(ans, headers=["Name", "Location", "Date"], tablefmt="simple")
+    await ctx.send("\n Circuit information for {}".format(season))
     await ctx.send(f"```\n{table_format}\n```")
     return
 
@@ -93,6 +95,7 @@ async def wdc(ctx, season="current"):
     for standing in standings.driver_standings:
         ans.append([standing.position, get_driver_full_name(standing.driver), standing.constructors[0].name, standing.points])
     table = tabulate(ans, headers=["Position", "Driver", "Team", "Points"])
+    await ctx.send("\n World Drivers' Championship information for {}".format(season))
     await ctx.send(f"```\n{table}\n```")
     return
 
@@ -104,6 +107,7 @@ async def wcc(ctx, season="current"):
     for standing in standings.constructor_standings:
         ans.append([standing.position, standing.constructor.name, standing.points])
     table = tabulate(ans, headers=["Position", "Team", "Points"])
+    await ctx.send("\n World Constructors' Championship information for {}".format(season))
     await ctx.send(f"```\n{table}\n```")
     return
 
@@ -128,6 +132,7 @@ async def predict(ctx, event="race"):
             ans.append([ind, driver])
             ind += 1
         table = tabulate(ans, headers=["Position", "Name"])
+        await ctx.send("\n Predictions for the next {}".format(event))
         await ctx.send(f"```\n{table}\n```")
         return
     else:
@@ -138,7 +143,7 @@ async def predict(ctx, event="race"):
 @bot.command()
 async def pitstops(ctx, season="current", round_no="last"):
     if not season == "current" and int(season) < 2012:
-        await ctx.send("Pit stop data available only after 2012 season")
+        await ctx.send("Pit stop data is only available for seasons after 2012")
         return
 
     stops = ergast_api.season(season).round(round_no).get_pit_stops()[0]
@@ -147,6 +152,7 @@ async def pitstops(ctx, season="current", round_no="last"):
         driver_info = utils.find_driver(pit_stop.driver_id)
         ans.append([pit_stop.lap, driver_info["familyName"], pit_stop.stop, get_formatted_pit_stop_time(pit_stop.duration)])
     table = tabulate(ans, headers=["Lap Number", "Driver", "Stop number", "Pit time (sec)"])
+    await ctx.send("\n Pit stop data for {}".format(season))
     await ctx.send(f"```\n{table}\n```")
     return
 
@@ -154,7 +160,7 @@ async def pitstops(ctx, season="current", round_no="last"):
 @bot.command()
 async def qualifying(ctx, season="current", round_no="last"):
     if not season == "current" and int(season) < 2012:
-        await ctx.send("Pit stop data available only after 2012 season")
+        await ctx.send("Qualifying data is only available for seasons after 2012")
         return
 
     quali_result = ergast_api.season(season).round(round_no).get_qualifying().qualifying_results
@@ -168,6 +174,7 @@ async def qualifying(ctx, season="current", round_no="last"):
             get_formatted_quali_time(quali.qual_3),
         ])
     table = tabulate(ans, headers=["Position Number", "Driver", "Q1", "Q2", "Q3"])
+    await ctx.send("\n Qualifying data for {}".format(season))   
     await ctx.send(f"```\n{table}\n```")
     return
 
@@ -186,5 +193,6 @@ async def timings(ctx, season="current", round_no="last", *drivers):
     driver_list = [utils.find_driver(d)["driverId"] for d in drivers]
     utils.get_lap_timings_plot(season, round_no, driver_list)
     plotted_figure = load.load_figure("plot_laps.png")
+    await ctx.send("\n Plot of the timings of {0} for {1}".format(drivers, season))
     await ctx.send(file=plotted_figure)
     return
