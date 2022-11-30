@@ -1,8 +1,8 @@
-import asyncio
-
-import plot as plot
 from tabulate import tabulate
-from utils import is_future, get_driver_full_name, get_formatted_date, get_formatted_pit_stop_time
+
+import load
+import utils
+from utils import is_future, get_driver_full_name, get_formatted_date, get_formatted_pit_stop_time, get_formatted_quali_time
 from fetch import fetch
 import discord
 from discord.ext import commands
@@ -32,8 +32,9 @@ async def purpose(ctx):
 
 
 @bot.command()
-async def career(ctx, driver_id):
+async def career(ctx, driver_inp):
     await ctx.send("*Gathering driver data, this may take a few moments...*")
+    driver_id = utils.find_driver(driver_inp)["driverId"]
     driver_info = ergast_api.driver(driver_id).get_driver()
     embed = discord.Embed(title=f"{driver_info.driver_id} Information:",
                           description="Information about the requested driver can be seen here",
@@ -49,7 +50,7 @@ async def career(ctx, driver_id):
     return
 
 
-@bot.command()
+@bot.command(aliases=['races'])
 async def circuits(ctx, season="current"):
     circuit_list = ergast_api.season(season).get_races()
     if not circuit_list:
@@ -66,7 +67,15 @@ async def circuits(ctx, season="current"):
 @bot.command()
 async def circuit(ctx, circuit_name):
     circuit_info = ergast_api.circuit(circuit_name).get_circuit()
-    print(circuit_info)
+    embed = discord.Embed(title=f"Circuit Information:",
+                          description="Information about the requested circuit and layout",
+                          url=circuit_info.url)
+    embed.add_field(name="Circuit Name", value=circuit_info.circuit_name)
+    embed.add_field(name="Country", value=circuit_info.location.locality + ", " + circuit_info.location.country)
+    embed.add_field(name="Laps", value=load.get_circuit_lap_number(circuit_name))
+    embed.add_field(name="Circuit Length", value=load.get_circuit_length(circuit_name))
+    embed.set_image(url=load.load_track_layout(circuit_name))
+    await ctx.send(embed=embed)
     return
 
 
@@ -135,15 +144,47 @@ async def pitstops(ctx, season="current", round_no="last"):
     stops = ergast_api.season(season).round(round_no).get_pit_stops()[0]
     ans = []
     for pit_stop in stops.pit_stops:
-        ans.append([pit_stop.lap, pit_stop.driver_id, pit_stop.stop, get_formatted_pit_stop_time(pit_stop.duration)])
-    table = tabulate(ans, headers=["Lap Number", "Driver ID", "Stop number", "Pit time (sec)"])
+        driver_info = utils.find_driver(pit_stop.driver_id)
+        ans.append([pit_stop.lap, driver_info["familyName"], pit_stop.stop, get_formatted_pit_stop_time(pit_stop.duration)])
+    table = tabulate(ans, headers=["Lap Number", "Driver", "Stop number", "Pit time (sec)"])
     await ctx.send(f"```\n{table}\n```")
     return
 
-# @plot.command(aliases=['laps'])
-# async def timings(ctx, season: int = 'current', rnd: int = 'last', *drivers):
-#     if not (len(drivers) == 0 or drivers[0] == 'all'):
-#         driver_list = [ergast_api.driver(d).get_driver().driver_id for d in drivers]
-#     else:
-#         driver_list = []
-#     laps_task = asyncio.create_task(ergast_api.season(season).round(rnd).get_all_laps())
+
+@bot.command()
+async def qualifying(ctx, season="current", round_no="last"):
+    if not season == "current" and int(season) < 2012:
+        await ctx.send("Pit stop data available only after 2012 season")
+        return
+
+    quali_result = ergast_api.season(season).round(round_no).get_qualifying().qualifying_results
+    ans = []
+    for quali in quali_result:
+        ans.append([
+            quali.position,
+            quali.driver.code,
+            get_formatted_quali_time(quali.qual_1),
+            get_formatted_quali_time(quali.qual_2),
+            get_formatted_quali_time(quali.qual_3),
+        ])
+    table = tabulate(ans, headers=["Position Number", "Driver", "Q1", "Q2", "Q3"])
+    await ctx.send(f"```\n{table}\n```")
+    return
+
+
+@bot.group(invoke_without_command=True, case_insensitive=True)
+async def plot(ctx, *args):
+    """Command group for all plotting functions."""
+    await ctx.send(f"Command not recognised. Type `{bot.command_prefix}help plot` for plotting subcommands.")
+
+
+@plot.command(aliases=['laps'])
+async def timings(ctx, season="current", round_no="last", *drivers):
+    if len(drivers) == 0:
+        await ctx.send("Drivers needed")
+        return
+    driver_list = [utils.find_driver(d)["driverId"] for d in drivers]
+    utils.get_lap_timings_plot(season, round_no, driver_list)
+    plotted_figure = load.load_figure("plot_laps.png")
+    await ctx.send(file=plotted_figure)
+    return
