@@ -2,6 +2,8 @@ from datetime import datetime, date
 import matplotlib.pyplot as plt
 
 import load
+import fetch
+import path
 from load import DRIVERS, save_figure
 import ergast_py
 
@@ -46,12 +48,27 @@ def get_lap_timings_plot(season, round_no, drivers):
             y_values.append(tt)
         plt.plot(x_values, y_values, marker="o", linestyle='--', label=driver)
 
-    plt.title(f"{season} - Round {round_no} - Lap Times")
+    plt.title(f"F1 {season} season - {laps.circuit.circuit_name} - Lap Times")
     plt.xlabel("Lap")
     plt.ylabel("Time (s)")
     # plt.grid(axis='y')
     plt.legend(loc="upper left")
     load.save_figure(fig, name='plot_laps.png')
+    return laps.circuit.circuit_name
+
+
+async def get_driver_career_stats(driver_id):
+    api = ergast_py.Ergast()
+
+    race_url = "{}/drivers/{}/results/1.json?limit=1000".format(path.BASE_URL, driver_id)
+    qualify_url = "{}/drivers/{}/qualifying/1.json?limit=1000".format(path.BASE_URL, driver_id)
+
+    win_res = await fetch.fetch(race_url)
+    wins = win_res["MRData"]["total"]
+    championships = len(api.driver(driver_id).standing(1).get_driver_standings())
+    pole_res = await fetch.fetch(qualify_url)
+    poles = pole_res["MRData"]["total"]
+    return wins, championships, poles
 
 
 def find_driver(driver_inp):
