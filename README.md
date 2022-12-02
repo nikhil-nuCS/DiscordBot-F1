@@ -41,7 +41,7 @@ To run the application, execure `python main.py` from your main directory. This 
 
 Invoke a command in discord by typing the prefix `!b` (this symbol can be changed in the code block) and one of the following commands:
 
-If a `[season]` or `[round]` aren't particularly mentioned in the command, then the program by default will consider the latest season and the last round respectively. 
+If a `[season]` or `[round]` isn't particularly mentioned in the command, then the program by default will consider the latest season and the last round respectively. 
 
 * `!b purpose` - Displays the purpose of this project<br/>
 * `!b career [driver id/ driver given name / driver number]` - Displays details about the driver as well as his career statistics.<br/>
