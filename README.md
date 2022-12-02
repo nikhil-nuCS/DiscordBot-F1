@@ -2,7 +2,11 @@
 
 ## Sports tech Project
 
-### Members: Nikhil Khandelwal, Preeti Subbiah, Rutuja Kajave
+### Members:
+
+1. Nikhil Khandelwal
+2. Preeti Subbiah
+3. Rutuja Kajave
 
 ## Description
 
@@ -41,16 +45,16 @@ To run the application, execure `python main.py` from your main directory. This 
 
 Invoke a command in discord by typing the prefix `!b` (this symbol can be changed in the code block) and one of the following commands:
 
-If a `[season]` or `[round]` isn't particularly mentioned in the command, then the program by default will consider the latest season and the last round respectively. 
+If a `[season]` or `[round]` isn't particularly mentioned in the command, then the program by default will consider the latest season and the last round respectively.
 
-* `!b purpose` - Displays the purpose of this project<br/>
-* `!b career [driver id/ driver given name / driver number]` - Displays details about the driver as well as his career statistics.<br/>
-* `!b circuits [season]` - Displays all the circuits for that particular year.<br/>
-* `!b circuit [circuit id]` - Displays the details and the route for a particular circuit.<br/>
-* `!b wdc [season]` - Displays World Driver Championship standings.<br/> 
-* `!b wcc [season]` - Displays World Constructor Championship standings.<br/> 
-* `!b results [season][round]` - Displays the standings for a particular season for a particular round. <br/>
-* `!b quali [season][round]` - Displays the standings qualifiers for a particular season for a particular round.<br/>
-* `!b pitstops [season][round]` - Displays pitstops taken by players during a particular round in a particular season.<br/>
-* `!b predict [race/quali]` - Will predict results for either a race or a qualifier, depending on the suffix used in the command using past race data for the drivers.<br/>
-* `!b plot timings [season][round][driver1, driver2, ... n]` - Plots a graph for lap timings of drivers included in the array. Drivers can be addressed using driver id, given name or driver number. 
+- `!b purpose` - Displays the purpose of this project<br/>
+- `!b career [driver id/ driver given name / driver number]` - Displays details about the driver as well as his career statistics.<br/>
+- `!b circuits [season]` - Displays all the circuits for that particular year.<br/>
+- `!b circuit [circuit id]` - Displays the details and the route for a particular circuit.<br/>
+- `!b wdc [season]` - Displays World Driver Championship standings.<br/>
+- `!b wcc [season]` - Displays World Constructor Championship standings.<br/>
+- `!b results [season][round]` - Displays the standings for a particular season for a particular round. <br/>
+- `!b quali [season][round]` - Displays the standings qualifiers for a particular season for a particular round.<br/>
+- `!b pitstops [season][round]` - Displays pitstops taken by players during a particular round in a particular season.<br/>
+- `!b predict [race/quali]` - Will predict results for either a race or a qualifier, depending on the suffix used in the command using past race data for the drivers.<br/>
+- `!b plot timings [season][round][driver1, driver2, ... n]` - Plots a graph for lap timings of drivers included in the array. Drivers can be addressed using driver id, given name or driver number.
