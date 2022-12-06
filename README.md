@@ -18,6 +18,7 @@ This application requires Python 3.7+ to be installed.
 
 `$ git clone https://github.com/nikhil-nuCS/DiscordBot-F1.git` <br/>
 `$ cd DiscordBot-F1`
+`$ pip install -r requirements.txt`
 
 ## Creating a Bot user
 

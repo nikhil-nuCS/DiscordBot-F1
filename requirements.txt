@@ -1,0 +1,9 @@
+aiohttp==3.5.4
+async-timeout==3.0.1
+beautifulsoup4==4.7.1
+discord.py==1.0.0
+matplotlib==3.6.2
+requests==2.27.1
+tabulate==0.8.3
+ergast-py
+
